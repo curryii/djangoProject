@@ -1,9 +1,12 @@
 from django.urls import path
 from projects import views
+from projects.views import ProjectView
+
+"""
+定义类视图路由
+path('project/', ProjectView.as_view())
+"""
 
 urlpatterns = [
-    path('get/', views.get_project),
-    path('create/', views.create_project),
-    path('delete/', views.delete_project),
-    path('put/', views.put_project)
+    path('project/<int:pk>/', ProjectView.as_view())
 ]

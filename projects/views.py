@@ -1,28 +1,26 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 
-
 # Create your views here.
+from django.views import View
+
 
 def hello(request):
+    """定义函数视图"""
     return HttpResponse("<h1>Hello,大佬们！</h1>")
 
 
-def create_project(request):
-    return HttpResponse("创建项目信息")
+class ProjectView(View):
+    """定义类视图"""
 
+    def get(self, request, pk):
+        return HttpResponse(f"获取项目信息{pk}")
 
-def put_project(request):
-    return HttpResponse("更新项目信息")
+    def put(self, request):
+        return HttpResponse("更新项目信息")
 
+    def post(self, request):
+        return HttpResponse(f"创建项目信息")
 
-def get_project(request):
-    return HttpResponse("获取项目信息")
-
-
-def delete_project(request):
-    return HttpResponse("删除项目信息")
-
-
-def id_project(request, pk):
-    return HttpResponse(f"删除项目信息{pk}")
+    def delete(self, request):
+        return HttpResponse("删除项目信息")
