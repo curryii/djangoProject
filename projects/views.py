@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
@@ -14,7 +14,12 @@ class ProjectView(View):
     """定义类视图"""
 
     def get(self, request, pk):
-        return HttpResponse(f"获取项目信息{pk}")
+        data = {
+            'id': 100,
+            'name': 'curry',
+            'sex': '男'
+        }
+        return JsonResponse(data, json_dumps_params={'ensure_ascii': False})
 
     def put(self, request):
         return HttpResponse("更新项目信息")
