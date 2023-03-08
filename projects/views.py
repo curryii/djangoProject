@@ -14,12 +14,22 @@ class ProjectView(View):
     """定义类视图"""
 
     def get(self, request, pk):
-        data = {
-            'id': 100,
+        data = [{
+            'id': pk,
             'name': 'curry',
             'sex': '男'
-        }
-        return JsonResponse(data, json_dumps_params={'ensure_ascii': False})
+            },
+            {
+                'id': pk,
+                'name': 'curry',
+                'sex': '男'
+            },
+            {
+                'id': pk,
+                'name': 'curry',
+                'sex': '男'
+            }]
+        return JsonResponse(data, json_dumps_params={'ensure_ascii': False}, safe=False)
 
     def put(self, request):
         return HttpResponse("更新项目信息")
