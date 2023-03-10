@@ -34,7 +34,8 @@ class ProjectView(View):
     def put(self, request):
         return HttpResponse("更新项目信息")
 
-    def post(self, request):
+    def post(self, request, pk):
+        print(pk)
         return HttpResponse(f"创建项目信息")
 
     def delete(self, request):
