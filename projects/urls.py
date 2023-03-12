@@ -8,5 +8,6 @@ path('project/', ProjectView.as_view())
 """
 
 urlpatterns = [
-    path('project/<int:pk>/', ProjectView.as_view())
+    path('project/<int:pk>/', ProjectView.as_view()),
+    path('sql/', views.sql)
 ]
