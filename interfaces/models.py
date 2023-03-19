@@ -2,6 +2,7 @@ from django.db import models
 from projects.models import Projects
 from utils.base_model import BaseModel
 
+
 # Create your models here.
 
 
@@ -10,7 +11,8 @@ class Interfaces(BaseModel):
     tester = models.CharField(verbose_name="测试人员", help_text="测试人员", max_length=10)
 
     """建立外键字段"""
-    projects = models.ForeignKey(Projects, on_delete=models.CASCADE, verbose_name="所属项目", help_text="所属项目")
+    projects = models.ForeignKey(Projects, on_delete=models.CASCADE, verbose_name="所属项目", help_text="所属项目",
+                                 related_name="inter")
 
     class Meta:
         """指定创建数据库表名称"""
