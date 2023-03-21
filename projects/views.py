@@ -32,7 +32,7 @@ class ProjectView(View):
         req_ser = ProjectSerializer(data=req_data)
 
         if not req_ser.is_valid():
-            return JsonResponse(req_ser.errors)
+            return JsonResponse(req_ser.errors, status=400)
 
         projects_obj = Projects.objects.create(**req_ser.validated_data)
         """序列化输出"""
@@ -52,12 +52,16 @@ class ProjectViewId(View):
     """更新项目信息"""
 
     def put(self, request, pk):
-        data = json.loads(request.body)
+        req_data = json.loads(request.body)
+        req_ser = ProjectSerializer(data=req_data)
+
+        if not req_ser.is_valid():
+            return JsonResponse(req_ser.errors, status=400)
 
         project_d = Projects.objects.get(id=pk)
-        project_d.name = data.get("name")
-        project_d.leader = data.get("leader")
-        project_d.is_execute = data.get("is_execute")
+        project_d.name = req_ser.validated_data.get("name")
+        project_d.leader = req_ser.validated_data.get("leader")
+        project_d.is_execute = req_ser.validated_data.get("is_execute")
         project_d.save()
         """序列化输出"""
         serializer = ProjectSerializer(instance=project_d)
