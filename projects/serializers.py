@@ -11,7 +11,7 @@ from projects.models import Projects
 5、校验规则的执行顺序?
 
 对字段类型进行校验 -> 依次验证validators列表中的校验规则 -> 从右到左依次验证其他规 -> 调用单字段校验方法
--> 调用多字段联合校验方法validate方法
+-> to_internal_value调用结束 -> 调用多字段联合校验方法validate方法
 
 1、可以在类外自定义校验函数
 2、第一个参数为待校验的值
@@ -27,6 +27,12 @@ from projects.models import Projects
 1、可以在序列化器类中对多个字段进行联合校验
 2、使用固定的validate方法，会接收上面校验通过之后的字典数据
 3、当所有字段定义时添加的校验规则都通过,且每个字典的单字段校验方法通过的情况下，才会调用validate
+
+1、to_internal_value方法，是所有字段开始进行校验时入口方法（最先调用的方法)
+2、会依次对序列化器类的各个序列化器字段进行校验
+3、应用场景：对各个单字段校验结束之后的数据进行修改
+
+1、to representation方法，是所有字段开始进行序列化输出时的入口方法（最先调用的方法)
 """
 
 
@@ -88,3 +94,24 @@ class ProjectSerializer(serializers.Serializer):
         if "pro" not in attrs.get("name") or not attrs.get("is_execute"):
             raise serializers.ValidationError('"pro" not in attrs.get("name") or not attrs.get("is_execute")')
         return attrs
+
+    def to_internal_value(self, data):
+        tmp = super().to_internal_value(data)
+        return tmp
+
+    def to_representation(self, instance):
+        tmp = super().to_representation(instance)
+        return tmp
+
+    def create(self, validated_data):
+        user = validated_data.pop("user")
+        age = validated_data.pop("age")
+        project_obj = Projects.objects.create(**validated_data)
+        return project_obj
+
+    def update(self, instance, validated_data: dict):
+        instance.name = validated_data.get("name") or instance.name
+        instance.leader = validated_data.get("leader") or instance.leader
+        instance.is_execute = validated_data.get("is_execute") or instance.is_execute
+        instance.save()
+        return instance

@@ -34,10 +34,25 @@ class ProjectView(View):
         if not req_ser.is_valid():
             return JsonResponse(req_ser.errors, status=400)
 
-        projects_obj = Projects.objects.create(**req_ser.validated_data)
-        """序列化输出"""
+        """
+        req_ser.save() == Projects.objects.create(**req_ser.validated_data)
+        1、如果在创建序列化器对象时，仅传递data参数，使用序列化器对象调用save方法时，会自动调用序列化器中的create方法
+        2、create方法用于对数据进行创建操作
+        3、序列化器类中的create方法，validated_data参数为校验通过之后的数据（一般字典类型)
+        4、在调用save方法时，可以传递任意的关键字参数，并且会自动合并到validated_data字典中
+        5、create方法一般需要将创建成功之后模型对象返回
+        """
+        req_ser.save(age=10, user="男大大")
+
+        """序列化输出
         serializer = ProjectSerializer(instance=projects_obj)
-        return JsonResponse(serializer.data, status=201)
+        1、在创建序列化器对象时，仅仅只传递data参数，那么必须得调用is_valid()方法通过之后
+        2、如果没有调用save方法，使用创建序列化器对象. data属性，来获取序列化输出的数据
+            (会把validated_data数据作为输入源，参照序列化器字段的定义来进行输入)
+        3、如果调用了save方法，使用创建序列化器对象.data属性，来获取序列化输出的数据
+            (会把create方法返回的模型对象数据作为输入源，参照序列化器字段的定义来进行输出)
+        """
+        return JsonResponse(req_ser.data, status=201)
 
 
 class ProjectViewId(View):
@@ -53,19 +68,30 @@ class ProjectViewId(View):
 
     def put(self, request, pk):
         req_data = json.loads(request.body)
-        req_ser = ProjectSerializer(data=req_data)
+        project_d = Projects.objects.get(id=pk)
+        req_ser = ProjectSerializer(instance=project_d, data=req_data)
 
         if not req_ser.is_valid():
             return JsonResponse(req_ser.errors, status=400)
-
+        """
+        1、如果在创建序列化器对象时，同时instance和data参数，使用序列化器对象调用save方法时，会自动调用序列化器类中的update方法
+        2、update方法用于对数据进行更新操作
+        3、序列化器类中的update方法，instance参数为待更新的模型对象，validated _data参数为校验通过之后的数据（一般字典类型)
+        4、在调用save方法时，可以传递任意的关键字参数，并且会自动合并到validated_data字典中
+        5、update方法一般需要将更新成功之后模型对象返回
+        """
+        req_ser.save()
+        """
         project_d = Projects.objects.get(id=pk)
         project_d.name = req_ser.validated_data.get("name")
         project_d.leader = req_ser.validated_data.get("leader")
         project_d.is_execute = req_ser.validated_data.get("is_execute")
         project_d.save()
-        """序列化输出"""
+        """
+        """序列化输出
         serializer = ProjectSerializer(instance=project_d)
-        return JsonResponse(serializer.data, status=201)
+        """
+        return JsonResponse(req_ser.data, status=201)
 
     """删除项目信息"""
 
