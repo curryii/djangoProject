@@ -80,6 +80,18 @@ class ProjectSerializer(serializers.Serializer):
     # inter = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
     inter = InterfaceSerializer(label="项目接口信息", help_text="项目接口信息", read_only=True, many=True)
 
+    """
+    1、如果定义了一个模型类中没有的字段，并且该字段需要输出（序列化输出）
+    2、需要在create方法、update方法中的模型对象上，添加动态的属性即可
+    """
+    token = serializers.CharField(read_only=True)
+
+    """
+    3、如果定义了一个模型类中没有的字段，并且该字段需要输入（反序列化输入)
+    4、需要在create方法、update方法调用之前，将该字段pop调用
+    """
+    sms_code = serializers.CharField(write_only=True)
+
     def validate_name(self, attr: str):
         if not attr.endswith("项目"):
             raise serializers.ValidationError("项目名称必须已项目结尾")
@@ -104,9 +116,11 @@ class ProjectSerializer(serializers.Serializer):
         return tmp
 
     def create(self, validated_data):
-        user = validated_data.pop("user")
-        age = validated_data.pop("age")
+        validated_data.pop("user")
+        validated_data.pop("age")
+        validated_data.pop("sms_code")
         project_obj = Projects.objects.create(**validated_data)
+        project_obj.token = "token"
         return project_obj
 
     def update(self, instance, validated_data: dict):
