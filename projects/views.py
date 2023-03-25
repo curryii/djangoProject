@@ -2,12 +2,14 @@ import json
 from django.db.models import Q, QuerySet, Count, Avg, Max, Min
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from rest_framework.views import APIView
+
 from .models import Projects
 from interfaces.models import Interfaces
 # Create your views here.
 from django.views import View
 from django.db import connection
-from .serializers import ProjectSerializer
+from .serializers import ProjectSerializer, ProjectModelSerializer
 
 
 def hello(request):
@@ -15,13 +17,13 @@ def hello(request):
     return HttpResponse("<h1>Hello,大佬们！</h1>")
 
 
-class ProjectView(View):
+class ProjectView(APIView):
     """获取所以项目信息"""
 
     def get(self, request):
         res = Projects.objects.all()
         """序列化输出"""
-        serializer = ProjectSerializer(instance=res, many=True)
+        serializer = ProjectModelSerializer(instance=res, many=True)
         return JsonResponse(serializer.data, safe=False)
 
     """创建项目信息"""
@@ -29,7 +31,7 @@ class ProjectView(View):
     def post(self, request):
         """反序列化输入"""
         req_data = json.loads(request.body)
-        req_ser = ProjectSerializer(data=req_data)
+        req_ser = ProjectModelSerializer(data=req_data)
 
         if not req_ser.is_valid():
             return JsonResponse(req_ser.errors, status=400)
@@ -42,7 +44,7 @@ class ProjectView(View):
         4、在调用save方法时，可以传递任意的关键字参数，并且会自动合并到validated_data字典中
         5、create方法一般需要将创建成功之后模型对象返回
         """
-        req_ser.save(age=10, user="男大大")
+        req_ser.save()
 
         """序列化输出
         serializer = ProjectSerializer(instance=projects_obj)

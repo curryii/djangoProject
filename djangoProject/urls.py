@@ -22,4 +22,5 @@ urlpatterns = [
     path('hello/', views.hello),
 
     path('', include('projects.urls')),
+    path('', include('interfaces.urls'))
 ]
