@@ -9,6 +9,5 @@ path('project/', ProjectView.as_view())
 
 urlpatterns = [
     path('project/', ProjectView.as_view()),
-    path('project/<int:pk>/', ProjectViewId.as_view()),
-    path('sql/', views.sql)
+    path('project/<int:id>/', ProjectViewId.as_view())
 ]
