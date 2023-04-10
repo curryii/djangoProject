@@ -3,10 +3,20 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "http://pypi.douban.com/simple/"
+verify_ssl = false
+name = "pypidouban"
+
 [packages]
 django = "*"
 djangorestframework = "*"
 markdown = "*"
+coreapi = "*"
+pygments = "*"
+drf-yasg = "*"
+djangorestframework-jwt = {version = "*", index = "pypidouban"}
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 

@@ -103,3 +103,15 @@ class ProjectModelSerializer(serializers.ModelSerializer):
             }
 
         }
+
+
+class ProjectModelSerializer_a(serializers.ModelSerializer):
+    class Meta:
+        model = Projects
+        fields = ("id",)
+
+
+class ProjectNamesModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Projects
+        fields = ("id", "name")

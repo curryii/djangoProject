@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
+import datetime
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,7 +24,7 @@ SECRET_KEY = 'django-insecure-jenx40z+12ud!&hzq4l$%k_pci_q@drjyi$(^!6!6x3o-upcpj
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+# 指定允许使用哪些地址访问当前系统
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -35,9 +36,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework_simplejwt',
     'rest_framework',
+    'drf_yasg',
     'projects',
-    'interfaces'
+    'interfaces',
+    'users'
+
 ]
 
 MIDDLEWARE = [
@@ -129,6 +134,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 """
 REST_FRAMEWORK = {
+
     "DEFAULT_FILTER_BACKENDS": ["rest_framework.filters.SearchFilter",
                                 "rest_framework.filters.OrderingFilter"
                                 ],
@@ -136,6 +142,118 @@ REST_FRAMEWORK = {
 
     # "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination"
     "DEFAULT_PAGINATION_CLASS": "utils.pagination.PageNumberPagination",
-    "PAGE_SIZE": 3
+    "PAGE_SIZE": 3,
+
+    # 指定用于支持coreapi的Schema
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+
+    # 指定使用的认证类
+    # a.在全局指定默认的认证类（指定认证方式)
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 1）指定使用JWT TOKEN认证类
+        # 2）在全局路由表中添加obtain_jwt_token路由（可以使用用户名和密码进行认证）
+        # 3）认证通过之后，在响应体中会返回token值
+        # 4）将token值设置请求头参数，key为Authorization，value为JWT token值
+        # 使用rest_framework_simplejwt验证身份
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        # b.Session会话认证
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication'
+    ],
+    # 指定使用的权限类
+    # a.在全局指定默认的权限类（当认证通过之后，可以获取何种权限)
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    # AllowAny不管是否有认证成功，都能获取所有权限
+    # IsAdminUser管理员（管理员需要登录）具备所有权限
+    # IsAuthenticated只要登录，就具备所有权限
+    # IsAuthenticatedOrReadOnly，如果登录了就具备所有权限，不登录只具备读取数据的权限
+    # 'rest_framework.permissions.IsAuthenticated',]
+}
+
+# simplejwt配置， 需要导入datetime模块
+SIMPLE_JWT = {
+    # token有效时长
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=30),
+    # token刷新后的有效时间
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+}
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}
+
+# 配置日志器，记录网站的日志信息
+LOGGING = {
+    # 版本
+    'version': 1,
+    # 是否禁用已存在的日志器
+    'disable_existing_loggers': False,
+    # 定义日志输出格式
+    'formatters': {
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(lineno)d %(message)s'
+        },
+        'verbose': {
+            'format': '%(levelname)s %(module)s %(lineno)d %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    # 指定日志输出渠道（日志输出的地方)
+    'handlers': {
+        # 指定在console控制台（终端）的日志配置信息
+        'console': {
+            # 指定日志记录等级
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        # 指定在日志文件的配置信息
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, "logs/logs.log"),  # 日志文件的位置，必须先手动创建这个logs文件夹
+            # 单个日志文件最大字节数
+            'maxBytes': 100 * 1024 * 1024,
+            # 日志文件个数
+            'backupCount': 10,
+            'formatter': 'verbose',
+            'encoding': 'utf-8'
+        },
+    },
+    # 定义日志器
+    'loggers': {
+        'project': {  # 定义了一个名为django的日志器
+            'handlers': ['console', 'file'],
+            'propagate': True,
+            'level': 'INFO',  # 日志器接收的最低日志级别
+        },
+    }
+}
+
+# 指定使用的用户模型类，默认为auth子应用下的User
+# AUTH_USER_MODEL = 'users.UserModel'
+
+
+JWT_AUTH = {
+    # 修改JWT TOKEN认证请求头中Authorization value值的前缀
+    'JWT_AUTH_HEADER_PREFIX': 'bearer',
+    # 指定TOKEN过期时间，默认为5分钟，可以使用JWT_EXPIRATION_DELTA指定
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+    # 修改处理payload的函数
+    'JWT_RESPONSE_PAYLOAD_HANDLER':
+        'utils.handle_jwt_response.jwt_response_payload_handler',
 
 }
